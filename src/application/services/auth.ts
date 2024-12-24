@@ -10,6 +10,10 @@ export class AuthService {
 		this.sessionRepositories = sessionRepo;
 	}
 
+	public async getSession(sessionId: string) {
+		return await this.sessionRepositories.getSession(sessionId);
+	}
+
 	public async register(username: string, email: string, password: string) {
 		const existedUser = await this.userRepositories.getUser(email);
 

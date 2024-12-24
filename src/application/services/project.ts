@@ -12,6 +12,10 @@ export class ProjectService {
 		return await this.projectRepositories.getAll(userId);
 	}
 
+	public async getProjectDetail(projectId: string) {
+		return await this.projectRepositories.get(projectId);
+	}
+
 	public async createProject(
 		name: string,
 		description: string,
