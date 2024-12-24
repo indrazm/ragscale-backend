@@ -1,10 +1,17 @@
 import { prisma } from "../utils/prisma";
 
 export class SessionRepositories {
-	public async getSession(id: string) {
+	public async getSession(userIdOrSessionId: string) {
 		return await prisma.session.findFirst({
 			where: {
-				id,
+				OR: [
+					{
+						id: userIdOrSessionId,
+					},
+					{
+						userId: userIdOrSessionId,
+					},
+				],
 			},
 		});
 	}
@@ -17,6 +24,14 @@ export class SessionRepositories {
 						id: userId,
 					},
 				},
+			},
+		});
+	}
+
+	public async delete(sessionId: string) {
+		return await prisma.session.delete({
+			where: {
+				id: sessionId,
 			},
 		});
 	}

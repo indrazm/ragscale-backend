@@ -8,11 +8,11 @@ datasource db {
 }
 
 model User {
-  id        String @id @default(cuid())
-  username  String @unique
-  email     String @unique
+  id        String  @id @default(cuid())
+  username  String  @unique
+  email     String  @unique
   password  String
-  avatarUrl String
+  avatarUrl String?
 
   session Session[]
   project Project[]
@@ -32,7 +32,7 @@ model Project {
   document    String
   content     Content[]
   userId      String
-  user User @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
 }
 
 model Content {
