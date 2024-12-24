@@ -1,15 +1,23 @@
-# Elysia with Bun runtime
+# Ragscale Backend
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
+This is for demonstration purposes only. It is a simple backend that provides a REST API for Devscale Workshop.
+
+## Installation
+
 ```bash
-bun create elysia ./elysia-example
+bun install
 ```
 
-## Development
-To start the development server run:
-```bash
-bun run dev
-```
+## Prepare the database
 
-Open http://localhost:3000/ with your browser to see the result.
+Before you can run the application, you need to prepare the database.
+ChromaDB is used for Vector Database
+Redis is used for Task Queue
+
+```bash
+docker pull chromadb/chroma
+docker pull redis
+
+docker run --name ragscale-redis -d -p 6379:6379 redis
+docker run --name ragscale-chromadb -d -p 8090:8000 chromadb/chroma
+```
