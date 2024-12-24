@@ -48,6 +48,6 @@ export class AuthService {
 
 		const newSession = await this.sessionRepositories.create(user.id);
 
-		return { session: newSession };
+		return { user, session: newSession };
 	}
 }
