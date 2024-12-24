@@ -3,13 +3,26 @@ services:
     build: .
     ports:
       - "8000:8000"
+    depends_on:
+      - vector-db
+      - redis-db
 
   vector-db:
     image: chromadb/chroma
     ports:
       - "8090:8000"
+    volumes:
+      - vector-data:/index_data
 
   redis-db:
     image: redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  vector-data:
+    name: vector-data
+  redis-data:
+    name: redis-data
