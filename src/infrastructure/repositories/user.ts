@@ -1,7 +1,7 @@
 import type { User } from "@prisma/client";
 import { prisma } from "../utils/prisma";
 
-type CreateUser = Omit<User, "id">;
+type CreateUser = Omit<User, "id" | "avatarUrl">;
 
 export class UserRepositories {
 	public async getUser(idOrEmail: string) {
