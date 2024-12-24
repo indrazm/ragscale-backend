@@ -4,6 +4,7 @@ import { authService, projectService } from "../../application/instances";
 export const projectRouter = new Elysia()
 	.derive(async ({ headers, set }) => {
 		const authorization = headers.authorization;
+
 		if (!authorization) {
 			set.status = 401;
 			throw new Error("No authorization key");

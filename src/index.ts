@@ -1,7 +1,17 @@
 import { Elysia } from "elysia";
+import { authRouter } from "./presentation/routes/auth";
+import { projectRouter } from "./presentation/routes/project";
+import cors from "@elysiajs/cors";
 
-const app = new Elysia().get("/", () => "Hello Elysia").listen(3000);
+const _ = new Elysia()
+	// plugins
+	.use(cors())
 
-console.log(
-	`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
-);
+	// routes
+	.use(authRouter)
+	.use(projectRouter)
+
+	// port listening
+	.listen(8000, () => {
+		console.log("RAG Backend ran at port 8000");
+	});
