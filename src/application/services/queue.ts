@@ -16,7 +16,9 @@ export class Queue {
 		this.ocrService = ocr;
 	}
 
-	public queue = new QueueMQ("ocrQueue", { connection: redisOptions });
+	public queue() {
+		return new QueueMQ("ocrQueue", { connection: redisOptions });
+	}
 
 	public async process(projectId: string) {
 		const project = await this.projectRepositories.get(projectId);
