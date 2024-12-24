@@ -1,5 +1,5 @@
-import type { SessionRepositories } from "../infrastructure/repositories/session";
-import type { UserRepositories } from "../infrastructure/repositories/user";
+import type { SessionRepositories } from "../../infrastructure/repositories/session";
+import type { UserRepositories } from "../../infrastructure/repositories/user";
 
 export class AuthService {
 	private userRepositories: UserRepositories;

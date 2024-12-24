@@ -1,5 +1,5 @@
-import type { ProjectRepositories } from "../infrastructure/repositories/project";
 import slugify from "slugify";
+import type { ProjectRepositories } from "../../infrastructure/repositories/project";
 
 export class ProjectService {
 	private projectRepositories: ProjectRepositories;
