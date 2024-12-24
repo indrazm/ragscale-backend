@@ -4,15 +4,12 @@ import { projectRouter } from "./presentation/routes/project";
 import cors from "@elysiajs/cors";
 import swagger from "@elysiajs/swagger";
 import { serverAdapter } from "./infrastructure/utils/bullmq";
+import staticPlugin from "@elysiajs/static";
 
 export const _ = new Elysia()
   // plugins
+  .use(staticPlugin())
   .use(cors())
-  .use(
-    swagger({
-      path: "/docs",
-    }),
-  )
   .use(serverAdapter.registerPlugin())
 
   // routes

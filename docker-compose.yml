@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+
+  vector-db:
+    image: chromadb/chroma
+    ports:
+      - "8090:8000"
+
+  redis-db:
+    image: redis
+    ports:
+      - "6379:6379"

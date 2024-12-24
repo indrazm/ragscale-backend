@@ -2,12 +2,13 @@
   "name": "backend",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts"
   },
   "dependencies": {
     "@bull-board/elysia": "^6.5.3",
     "@elysiajs/cors": "^1.2.0",
+    "@elysiajs/static": "^1.2.0",
     "@elysiajs/swagger": "^1.2.0",
     "@prisma/client": "^6.1.0",
     "bullmq": "^5.34.4",
