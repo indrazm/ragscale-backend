@@ -2,10 +2,16 @@ import { Elysia } from "elysia";
 import { authRouter } from "./presentation/routes/auth";
 import { projectRouter } from "./presentation/routes/project";
 import cors from "@elysiajs/cors";
+import swagger from "@elysiajs/swagger";
 
-const _ = new Elysia()
+export const _ = new Elysia()
 	// plugins
 	.use(cors())
+	.use(
+		swagger({
+			path: "/docs",
+		}),
+	)
 
 	// routes
 	.use(authRouter)
