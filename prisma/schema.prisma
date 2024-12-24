@@ -15,6 +15,7 @@ model User {
   avatarUrl String
 
   session Session[]
+  project Project[]
 }
 
 model Session {
@@ -30,6 +31,8 @@ model Project {
   slug        String    @unique
   document    String
   content     Content[]
+  userId      String
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Content {
