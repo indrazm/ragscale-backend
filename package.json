@@ -6,9 +6,12 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "@prisma/client": "^6.1.0",
+    "elysia": "latest",
+    "prisma": "^6.1.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "bun-types": "latest"
   },
   "module": "src/index.js"
