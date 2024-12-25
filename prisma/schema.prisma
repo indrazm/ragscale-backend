@@ -28,9 +28,9 @@ model Project {
   id          String    @id @default(cuid())
   name        String
   description String
-  slug        String    @unique
   document    String
   content     Content[]
+  status      String    @default("PROCESSING")
   userId      String
   user        User      @relation(fields: [userId], references: [id])
 }

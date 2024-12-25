@@ -1,32 +1,21 @@
 {
   "name": "backend",
-  "version": "1.0.50",
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "start": "bun run src/index.ts"
+    "dev": "bun  --watch src/index.ts",
+    "lint": "bunx @biomejs/biome check src",
+    "lint:fix": "bun lint --apply"
   },
   "dependencies": {
-    "@bull-board/elysia": "^6.5.3",
-    "@elysiajs/cors": "^1.2.0",
-    "@elysiajs/static": "^1.2.0",
-    "@elysiajs/swagger": "^1.2.0",
-    "@prisma/client": "^6.1.0",
-    "bullmq": "^5.34.4",
-    "chalk": "^5.4.1",
-    "chromadb": "^1.9.4",
-    "chromadb-default-embed": "^2.13.2",
-    "elysia": "latest",
-    "langchain": "^0.3.7",
-    "pdf-lib": "^1.17.1",
-    "pdf2pic": "^3.1.3",
-    "prisma": "^6.1.0",
-    "slugify": "^1.6.6",
-    "tesseract.js": "^5.1.1",
-    "winston": "^3.17.0"
+    "elysia": "^1.1.5",
+    "@elysiajs/cors": "^1.1.0",
+    "@elysiajs/static": "^1.1.0",
+    "@elysiajs/swagger": "^1.1.0",
+    "@bogeychan/elysia-logger": "^0.1.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "bun-types": "latest"
-  },
-  "module": "src/index.js"
+    "typescript": "^5.5.4",
+    "@types/bun": "^1.1.6",
+    "@biomejs/biome": "^1.8.3",
+    "prisma": "^5.18.0"
+  }
 }

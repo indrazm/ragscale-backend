@@ -7,6 +7,14 @@ export class ProjectRepositories {
 			where: {
 				userId,
 			},
+			include: {
+				user: {
+					select: {
+						id: true,
+						username: true,
+					},
+				},
+			},
 		});
 	}
 
