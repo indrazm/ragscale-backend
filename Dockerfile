@@ -3,8 +3,10 @@ FROM oven/bun
 WORKDIR /app
 
 COPY ./package.json .
+COPY ./prisma ./
 
 RUN bun install
+RUN bunx prisma generate
 
 COPY . .
 
