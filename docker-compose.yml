@@ -6,6 +6,8 @@ services:
     depends_on:
       - vector-db
       - redis-db
+    env_file:
+      - .env
 
   vector-db:
     image: chromadb/chroma
