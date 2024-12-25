@@ -9,6 +9,7 @@ export const llm = new OpenAI({
 });
 
 export const prompt = new PromptTemplate({
-	template: "Summarize this text: {input}",
+	template:
+		"Summarize this text: {input}, The summarized text should not exceed 200 characters",
 	inputVariables: ["input"],
 });

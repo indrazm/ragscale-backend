@@ -30,7 +30,7 @@ model Project {
   description String
   document    String
   content     Content[]
-  status      String    @default("PROCESSING")
+  status      String    @default("ON-QUEUE")
   summary     String?
   userId      String
   user        User      @relation(fields: [userId], references: [id])

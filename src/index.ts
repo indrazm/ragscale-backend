@@ -23,6 +23,10 @@ new Worker(
 		const { projectId } = job.data;
 
 		const project = await projectService.getProjectDetail(projectId);
+		await projectService.updateProject(projectId, {
+			status: "PROCESSING",
+		});
+
 		if (!project) {
 			return "Task failed!";
 		}
@@ -50,6 +54,7 @@ new Worker(
 
 		await projectService.updateProject(projectId, {
 			summary: text,
+			status: "DONE",
 		});
 
 		return { message: "Task successfully processed", data: paths };
@@ -60,6 +65,11 @@ new Worker(
 createBullBoard({
 	queues: [new BullMQAdapter(ragQueue)],
 	serverAdapter,
+	options: {
+		uiConfig: {
+			boardTitle: "Ragscale Queue",
+		},
+	},
 });
 // =============================================== //
 // ============== Queue and Worker =============== //
