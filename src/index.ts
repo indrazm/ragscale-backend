@@ -50,6 +50,7 @@ new Worker(
 		}
 
 		const chain = prompt.pipe(llm);
+
 		const text = await chain.invoke({ input: textChunks.join("\n") });
 
 		await projectService.updateProject(projectId, {

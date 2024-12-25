@@ -1,21 +1,35 @@
 {
-  "name": "backend",
-  "scripts": {
-    "dev": "bun  --watch src/index.ts",
-    "lint": "bunx @biomejs/biome check src",
-    "lint:fix": "bun lint --apply"
-  },
-  "dependencies": {
-    "elysia": "^1.1.5",
-    "@elysiajs/cors": "^1.1.0",
-    "@elysiajs/static": "^1.1.0",
-    "@elysiajs/swagger": "^1.1.0",
-    "@bogeychan/elysia-logger": "^0.1.1"
-  },
-  "devDependencies": {
-    "typescript": "^5.5.4",
-    "@types/bun": "^1.1.6",
-    "@biomejs/biome": "^1.8.3",
-    "prisma": "^5.18.0"
-  }
+	"name": "backend",
+	"version": "0.1.0",
+	"scripts": {
+		"start": "bun run src/index.ts",
+		"dev": "bun run --watch src/index.ts",
+		"lint:format": "bunx biome format --write ./src",
+		"lint": "bunx biome lint --write ./src",
+		"prepare": "husky"
+	},
+	"dependencies": {
+		"@bogeychan/elysia-logger": "^0.1.1",
+		"@bull-board/api": "^6.5.3",
+		"@bull-board/elysia": "^6.5.3",
+		"@elysiajs/cors": "^1.1.0",
+		"@elysiajs/static": "^1.1.0",
+		"@elysiajs/swagger": "^1.1.0",
+		"@langchain/core": "^0.3.26",
+		"@langchain/openai": "^0.3.16",
+		"@prisma/client": "^6.1.0",
+		"bullmq": "^5.34.4",
+		"chromadb": "^1.9.4",
+		"chromadb-default-embed": "^2.13.2",
+		"elysia": "^1.1.5",
+		"langchain": "^0.3.8",
+		"prisma": "^6.1.0",
+		"winston": "^3.17.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.8.3",
+		"@types/bun": "^1.1.6",
+		"husky": "^9.1.7",
+		"typescript": "^5.5.4"
+	}
 }
