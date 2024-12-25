@@ -18,23 +18,25 @@ export class ProjectRepositories {
 		});
 	}
 
-	public async get(projectIdOrSlug: string) {
+	public async get(projectId: string) {
 		return await prisma.project.findFirst({
 			where: {
-				OR: [
-					{
-						id: projectIdOrSlug,
-					},
-					{
-						slug: projectIdOrSlug,
-					},
-				],
+				id: projectId,
 			},
 		});
 	}
 
-	public async create(data: Omit<Project, "id">) {
+	public async create(data: Omit<Project, "id" | "status" | "summary">) {
 		return await prisma.project.create({
+			data,
+		});
+	}
+
+	public async update(projectId: string, data: Partial<Project>) {
+		return await prisma.project.update({
+			where: {
+				id: projectId,
+			},
 			data,
 		});
 	}

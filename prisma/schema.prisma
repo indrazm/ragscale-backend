@@ -31,6 +31,7 @@ model Project {
   document    String
   content     Content[]
   status      String    @default("PROCESSING")
+  summary     String?
   userId      String
   user        User      @relation(fields: [userId], references: [id])
 }

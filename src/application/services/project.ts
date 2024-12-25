@@ -1,5 +1,5 @@
-import slugify from "slugify";
 import type { ProjectRepositories } from "../../infrastructure/repositories/project";
+import type { Project } from "@prisma/client";
 
 export class ProjectService {
 	private projectRepositories: ProjectRepositories;
@@ -22,16 +22,22 @@ export class ProjectService {
 		documentName: string,
 		userId: string,
 	) {
-		const slug = slugify(name, { lower: true });
 		const newProject = await this.projectRepositories.create({
 			name,
-			slug,
 			document: documentName,
 			description,
 			userId,
 		});
 
 		return { newProject };
+	}
+
+	public async updateProject(projectId: string, data: Partial<Project>) {
+		const updatedProject = await this.projectRepositories.update(
+			projectId,
+			data,
+		);
+		return { updatedProject };
 	}
 
 	public async addContent(projectId: string, content: string) {

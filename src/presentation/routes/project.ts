@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
 import { authService, projectService } from "../../application/instances";
+import { ragQueue } from "../..";
 
 export const projectRouter = new Elysia()
 	.derive(async ({ headers, set }) => {
@@ -37,6 +38,11 @@ export const projectRouter = new Elysia()
 				body.document.name,
 				user.id,
 			);
+
+			await ragQueue.add(newProject.id, {
+				projectId: newProject.id,
+				document: newProject.document,
+			});
 
 			await Bun.write(
 				`./public/${newProject.id}/${body.document.name}`,
