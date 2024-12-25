@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { authService, projectService } from "../../application/instances";
 import { ragQueue } from "../..";
+import slugify from "slugify";
 
 export const projectRouter = new Elysia()
 	.derive(async ({ headers, set }) => {
@@ -32,10 +33,12 @@ export const projectRouter = new Elysia()
 	.post(
 		"/projects",
 		async ({ body, user }) => {
+			const documentName = slugify(body.document.name, { lower: true });
+
 			const { newProject } = await projectService.createProject(
 				body.name,
 				body.description,
-				body.document.name,
+				documentName,
 				user.id,
 			);
 
@@ -45,7 +48,7 @@ export const projectRouter = new Elysia()
 			});
 
 			await Bun.write(
-				`./public/${newProject.id}/${body.document.name}`,
+				`./public/${newProject.id}/${documentName}`,
 				body.document,
 			);
 

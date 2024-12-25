@@ -10,6 +10,8 @@ import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { redisOptions } from "./infrastructure/config/redis";
 import { ocrService, projectService } from "./application/instances";
 import { llm, prompt } from "./infrastructure/utils/openai";
+import { chromaClient } from "./infrastructure/utils/chroma";
+import { OpenAIEmbeddingFunction } from "chromadb";
 
 // =============================================== //
 // ============== Queue and Worker =============== //
@@ -43,18 +45,36 @@ new Worker(
 			numberOfPages: pageCount,
 		});
 
-		const textChunks = [];
+		const documentContent = [];
 		for (const path of paths) {
 			const { text } = await ocrService.extractText(path);
-			textChunks.push(text);
+			documentContent.push(text);
 		}
 
 		const chain = prompt.pipe(llm);
+		const text = await chain.invoke({ input: documentContent.join("\n") });
 
-		const text = await chain.invoke({ input: textChunks.join("\n") });
+		await chromaClient.deleteCollection({ name: projectId });
+
+		const collection = await chromaClient.createCollection({
+			name: projectId,
+			embeddingFunction: new OpenAIEmbeddingFunction({
+				openai_api_key: process.env.OPENAI_API_KEY as string,
+				openai_model: "text-embedding-3-large",
+			}),
+		});
+
+		const { text: textChunks } = await ocrService.splitText(
+			documentContent.join("\n"),
+		);
+
+		await collection.add({
+			documents: textChunks,
+			ids: textChunks.map((_, i) => `ids_${i}`),
+		});
 
 		await projectService.updateProject(projectId, {
-			summary: text,
+			summary: text.content.toString(),
 			status: "DONE",
 		});
 
