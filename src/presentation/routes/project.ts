@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import slugify from "slugify";
 import { ragQueue } from "../..";
 import { authService, projectService } from "../../application/instances";
-import { chatPrompt } from "../../application/prompts/chat";
+import { chatPrompt, judgePrompt } from "../../application/prompts/chat";
 import { vectorStore } from "../../application/services/ocr";
 import { llm } from "../../infrastructure/utils/openai";
 
@@ -103,30 +103,49 @@ export const projectRouter = new Elysia()
 			const projectId = params.id;
 			const { query } = body;
 
-			await projectService.addChat(projectId, "user", query);
+			const summarizedDocument =
+				await projectService.getProjectDetail(projectId);
 
-			const similaritySearchResults =
-				await vectorStore.similaritySearchWithScore(query, 5, {
-					source: projectId,
-				});
-
-			const results = similaritySearchResults.map((result) => {
-				return {
-					id: result[0].id,
-					pageContent: result[0].pageContent,
-					score: result[1],
-				};
+			const judge = judgePrompt.pipe(llm);
+			const res = await judge.invoke({
+				question: query,
+				document: summarizedDocument?.summary,
 			});
 
-			const content = results.map((result) => result.pageContent).join("\n");
+			if (res.content.toString() === "YES") {
+				await projectService.addChat(projectId, "user", query);
 
-			const chain = chatPrompt.pipe(llm);
-			const text = await chain.invoke({ input: content, query });
-			const response = text.content.toString();
+				const similaritySearchResults =
+					await vectorStore.similaritySearchWithScore(query, 5, {
+						source: projectId,
+					});
 
-			await projectService.addChat(projectId, "ai", response);
+				const results = similaritySearchResults.map((result) => {
+					return {
+						id: result[0].id,
+						pageContent: result[0].pageContent,
+						score: result[1],
+					};
+				});
 
-			return response;
+				const content = results.map((result) => result.pageContent).join("\n");
+				const historyChat = await projectService.getChatHistory(projectId);
+
+				const chain = chatPrompt.pipe(llm);
+				const text = await chain.invoke({
+					input: content,
+					query,
+					history: historyChat,
+				});
+
+				const response = text.content.toString();
+
+				await projectService.addChat(projectId, "ai", response);
+
+				return response;
+			}
+
+			return res.content.toString();
 		},
 		{
 			body: t.Object({

@@ -6,6 +6,8 @@ import { PDFDocument } from "pdf-lib";
 import { fromBuffer } from "pdf2pic";
 import slugify from "slugify";
 import { createWorker } from "tesseract.js";
+import { llm } from "../../infrastructure/utils/openai";
+import { summarizePrompt } from "../prompts/summarize";
 import type { ProjectService } from "./project";
 
 const embeddings = new OpenAIEmbeddings({
@@ -14,7 +16,7 @@ const embeddings = new OpenAIEmbeddings({
 
 export const vectorStore = new Chroma(embeddings, {
 	collectionName: "ragscale",
-	url: "http://localhost:8010",
+	url: "http://localhost:8090",
 });
 
 interface ConvertToImage {
@@ -125,6 +127,9 @@ export class OCR {
 			document += text;
 		}
 
+		const summarizeLLM = summarizePrompt.pipe(llm);
+		const summarize = await summarizeLLM.invoke({ input: document });
+
 		const { text: textChunks } = await this.splitText(document);
 
 		const documents: Document[] = textChunks.map((chunk) => {
@@ -134,13 +139,19 @@ export class OCR {
 			};
 		});
 
+		try {
+			await vectorStore.delete({ filter: { source: projectId } });
+		} catch (error) {
+			console.log("Error deleting documents", error);
+		}
+
 		await vectorStore.addDocuments(documents);
 
 		await this.projectService.updateProject(projectId, {
 			status: "DONE",
+			summary: summarize.content.toString(),
 		});
 
-		console.log("Task successfully processed");
 		return { paths };
 	}
 }
