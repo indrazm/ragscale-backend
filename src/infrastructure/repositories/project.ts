@@ -1,5 +1,5 @@
-import { prisma } from "../utils/prisma";
 import type { Project } from "@prisma/client";
+import { prisma } from "../utils/prisma";
 
 export class ProjectRepositories {
 	public async getAll(userId: string) {
@@ -41,15 +41,28 @@ export class ProjectRepositories {
 		});
 	}
 
-	public async addContent(projectId: string, content: string) {
-		return await prisma.content.create({
+	public async addChat(projectId: string, role: string, message: string) {
+		return await prisma.chatHistory.create({
 			data: {
-				content,
-				project: {
-					connect: {
-						id: projectId,
-					},
-				},
+				projectId,
+				role,
+				message,
+			},
+		});
+	}
+
+	public async getChat(projectId: string) {
+		return await prisma.chatHistory.findMany({
+			where: {
+				projectId,
+			},
+		});
+	}
+
+	public async clearChat(projectId: string) {
+		return await prisma.chatHistory.deleteMany({
+			where: {
+				projectId,
 			},
 		});
 	}

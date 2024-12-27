@@ -29,16 +29,18 @@ model Project {
   name        String
   description String
   document    String
-  content     Content[]
   status      String    @default("ON-QUEUE")
   summary     String?
   userId      String
   user        User      @relation(fields: [userId], references: [id])
+
+  chatHistory ChatHistory[]
 }
 
-model Content {
-  id        String  @id @default(cuid())
-  content   String
+model ChatHistory {
+  id       String @id @default(cuid())
   projectId String
   project   Project @relation(fields: [projectId], references: [id])
+  role     String
+  message  String
 }

@@ -1,5 +1,5 @@
-import type { ProjectRepositories } from "../../infrastructure/repositories/project";
 import type { Project } from "@prisma/client";
+import type { ProjectRepositories } from "../../infrastructure/repositories/project";
 
 export class ProjectService {
 	private projectRepositories: ProjectRepositories;
@@ -40,11 +40,22 @@ export class ProjectService {
 		return { updatedProject };
 	}
 
-	public async addContent(projectId: string, content: string) {
-		const newContent = await this.projectRepositories.addContent(
+	public async addChat(projectId: string, role: string, message: string) {
+		const chat = await this.projectRepositories.addChat(
 			projectId,
-			content,
+			role,
+			message,
 		);
-		return { newContent };
+		return { chat };
+	}
+
+	public async getChatHistory(projectId: string) {
+		const chatHistory = await this.projectRepositories.getChat(projectId);
+		return { chatHistory };
+	}
+
+	public async clearChatHistory(projectId: string) {
+		await this.projectRepositories.clearChat(projectId);
+		return { message: "Chat history cleared!" };
 	}
 }

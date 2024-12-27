@@ -120,8 +120,9 @@ export const projectRouter = new Elysia()
 
 			const chain = chatPrompt.pipe(llm);
 			const text = await chain.invoke({ input: content, query });
+			const response = text.content.toString();
 
-			return text.content.toString();
+			return response;
 		},
 		{
 			body: t.Object({

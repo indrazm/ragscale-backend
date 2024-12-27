@@ -1,7 +1,7 @@
 import { PromptTemplate } from "@langchain/core/prompts";
 
 export const summarizePrompt = new PromptTemplate({
-  template: `
+	template: `
 	You will be given a document to extract information from.
 	Here is the document: {input},
 
@@ -13,5 +13,5 @@ export const summarizePrompt = new PromptTemplate({
 	- The summarized text should be in English
 	- The summarized text should be concise and clear
 	`,
-  inputVariables: ["input"],
+	inputVariables: ["input"],
 });
