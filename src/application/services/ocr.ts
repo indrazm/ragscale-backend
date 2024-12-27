@@ -1,9 +1,21 @@
+import { Chroma } from "@langchain/community/vectorstores/chroma";
+import type { Document } from "@langchain/core/documents";
+import { OpenAIEmbeddings } from "@langchain/openai";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { PDFDocument } from "pdf-lib";
 import { fromBuffer } from "pdf2pic";
 import slugify from "slugify";
 import { createWorker } from "tesseract.js";
 import type { ProjectService } from "./project";
+
+const embeddings = new OpenAIEmbeddings({
+	model: "text-embedding-3-large",
+});
+
+const vectorStore = new Chroma(embeddings, {
+	collectionName: "ragscale",
+	url: "http://localhost:8010",
+});
 
 interface ConvertToImage {
 	projectId: string;
@@ -63,7 +75,8 @@ export class OCR {
 	private async splitText(text: string) {
 		const splitter = new RecursiveCharacterTextSplitter({
 			chunkSize: 1000,
-			chunkOverlap: 0,
+			chunkOverlap: 150,
+			separators: ["\n", ".", "!", "?", ";"],
 		});
 
 		const textChunk = await splitter.splitText(text);
@@ -106,8 +119,28 @@ export class OCR {
 			projectId,
 		);
 
-		console.log("Extracted image paths: ", paths);
+		let document = "";
+		for (const path of paths) {
+			const { text } = await this.extractText(path);
+			document += text;
+		}
 
+		const { text: textChunks } = await this.splitText(document);
+
+		const documents: Document[] = textChunks.map((chunk) => {
+			return {
+				pageContent: chunk,
+				metadata: { source: projectId },
+			};
+		});
+
+		await vectorStore.addDocuments(documents);
+
+		await this.projectService.updateProject(projectId, {
+			status: "DONE",
+		});
+
+		console.log("Task successfully processed");
 		return { paths };
 	}
 }

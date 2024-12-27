@@ -5,6 +5,7 @@ import cors from "@elysiajs/cors";
 import staticPlugin from "@elysiajs/static";
 import { Queue, Worker } from "bullmq";
 import { Elysia } from "elysia";
+import { ocrService } from "./application/instances";
 import { redisOptions } from "./infrastructure/config/redis";
 import { authRouter } from "./presentation/routes/auth";
 import { projectRouter } from "./presentation/routes/project";
@@ -19,6 +20,7 @@ new Worker(
 	"rag-queue",
 	async (job) => {
 		const { projectId } = job.data;
+		await ocrService.processRAG(projectId);
 
 		return { message: "Task successfully processed", data: projectId };
 	},
