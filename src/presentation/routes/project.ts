@@ -2,8 +2,9 @@ import { Elysia, t } from "elysia";
 import slugify from "slugify";
 import { ragQueue } from "../..";
 import { authService, projectService } from "../../application/instances";
+import { chatPrompt } from "../../application/prompts/chat";
 import { vectorStore } from "../../application/services/ocr";
-import { chatPrompt, llm } from "../../infrastructure/utils/openai";
+import { llm } from "../../infrastructure/utils/openai";
 
 export const projectRouter = new Elysia()
 	.derive(async ({ headers, set }) => {
