@@ -103,6 +103,8 @@ export const projectRouter = new Elysia()
 			const projectId = params.id;
 			const { query } = body;
 
+			await projectService.addChat(projectId, "user", query);
+
 			const similaritySearchResults =
 				await vectorStore.similaritySearchWithScore(query, 5, {
 					source: projectId,
@@ -121,6 +123,8 @@ export const projectRouter = new Elysia()
 			const chain = chatPrompt.pipe(llm);
 			const text = await chain.invoke({ input: content, query });
 			const response = text.content.toString();
+
+			await projectService.addChat(projectId, "ai", response);
 
 			return response;
 		},
