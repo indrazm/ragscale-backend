@@ -1,17 +1,17 @@
 import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { ElysiaAdapter } from "@bull-board/elysia";
-import { Elysia } from "elysia";
-import { authRouter } from "./presentation/routes/auth";
-import { projectRouter } from "./presentation/routes/project";
 import cors from "@elysiajs/cors";
 import staticPlugin from "@elysiajs/static";
 import { Queue, Worker } from "bullmq";
-import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
-import { redisOptions } from "./infrastructure/config/redis";
-import { ocrService, projectService } from "./application/instances";
-import { llm, prompt } from "./infrastructure/utils/openai";
-import { chromaClient } from "./infrastructure/utils/chroma";
 import { OpenAIEmbeddingFunction } from "chromadb";
+import { Elysia } from "elysia";
+import { ocrService, projectService } from "./application/instances";
+import { redisOptions } from "./infrastructure/config/redis";
+import { chromaClient } from "./infrastructure/utils/chroma";
+import { llm, summarizePrompt } from "./infrastructure/utils/openai";
+import { authRouter } from "./presentation/routes/auth";
+import { projectRouter } from "./presentation/routes/project";
 
 // =============================================== //
 // ============== Queue and Worker =============== //
@@ -51,7 +51,7 @@ new Worker(
 			documentContent.push(text);
 		}
 
-		const chain = prompt.pipe(llm);
+		const chain = summarizePrompt.pipe(llm);
 		const text = await chain.invoke({ input: documentContent.join("\n") });
 
 		await chromaClient.deleteCollection({ name: projectId });

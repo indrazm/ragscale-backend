@@ -1,12 +1,12 @@
-import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
+import { ChatOpenAI } from "@langchain/openai";
 
 export const llm = new ChatOpenAI({
 	model: "gpt-4o-mini",
 	apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const prompt = new PromptTemplate({
+export const summarizePrompt = new PromptTemplate({
 	template: `
 	You will be given a document to extract information from.
 	Here is the document: {input}, 
@@ -20,4 +20,19 @@ export const prompt = new PromptTemplate({
 	- The summarized text should be concise and clear
 	`,
 	inputVariables: ["input"],
+});
+
+export const chatPrompt = new PromptTemplate({
+	template: `
+	You will be given a document to extract information from.
+	Here is the document: {input}, 
+
+	Please provide a response to the following question:
+	{query}
+
+	IMPORTANT:
+	- The response should be in English
+	- The response should be concise and clear
+	`,
+	inputVariables: ["input", "query"],
 });

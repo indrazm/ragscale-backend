@@ -1,7 +1,10 @@
+import { OpenAIEmbeddingFunction } from "chromadb";
 import { Elysia, t } from "elysia";
-import { authService, projectService } from "../../application/instances";
-import { ragQueue } from "../..";
 import slugify from "slugify";
+import { ragQueue } from "../..";
+import { authService, projectService } from "../../application/instances";
+import { chromaClient } from "../../infrastructure/utils/chroma";
+import { chatPrompt, llm } from "../../infrastructure/utils/openai";
 
 export const projectRouter = new Elysia()
 	.derive(async ({ headers, set }) => {
@@ -66,4 +69,68 @@ export const projectRouter = new Elysia()
 		const project = await projectService.getProjectDetail(params.id);
 
 		return { data: project };
-	});
+	})
+	.post(
+		"/projects/:id/search",
+		async ({ params, body }) => {
+			const projectId = params.id;
+			const { query } = body;
+
+			const collection = await chromaClient.getCollection({
+				name: projectId,
+				embeddingFunction: new OpenAIEmbeddingFunction({
+					openai_api_key: process.env.OPENAI_API_KEY as string,
+					openai_model: "text-embedding-3-large",
+				}),
+			});
+
+			const data = await collection.query({
+				queryTexts: query,
+				nResults: 5,
+			});
+
+			const results = data.documents.map((_, i) => ({
+				document: data.documents[i],
+				distance: data.distances?.[i],
+			}));
+
+			return { data: results };
+		},
+		{
+			body: t.Object({
+				query: t.String(),
+			}),
+		},
+	)
+	.post(
+		"/projects/:id/chat",
+		async ({ params, body }) => {
+			const projectId = params.id;
+			const { query } = body;
+
+			const collection = await chromaClient.getCollection({
+				name: projectId,
+				embeddingFunction: new OpenAIEmbeddingFunction({
+					openai_api_key: process.env.OPENAI_API_KEY as string,
+					openai_model: "text-embedding-3-large",
+				}),
+			});
+
+			const data = await collection.query({
+				queryTexts: query,
+				nResults: 10,
+			});
+
+			const content = data.documents.join("\n");
+
+			const chain = chatPrompt.pipe(llm);
+			const text = await chain.invoke({ input: content, query });
+
+			return text.content.toString();
+		},
+		{
+			body: t.Object({
+				query: t.String(),
+			}),
+		},
+	);

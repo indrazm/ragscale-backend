@@ -5,7 +5,6 @@ import { ProjectRepositories } from "../infrastructure/repositories/project";
 import { ProjectService } from "./services/project";
 import { OCR } from "./services/ocr";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { Queue } from "./services/queue";
 
 const openAiEmbeddings = new OpenAIEmbeddings({
 	apiKey: process.env.OPENAI_API_KEY,
@@ -19,4 +18,3 @@ const projectRepo = new ProjectRepositories();
 export const authService = new AuthService(userRepo, sessionRepo);
 export const projectService = new ProjectService(projectRepo);
 export const ocrService = new OCR(openAiEmbeddings);
-export const queueService = new Queue(projectRepo, ocrService);
