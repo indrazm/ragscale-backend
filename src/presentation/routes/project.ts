@@ -1,9 +1,8 @@
-import { OpenAIEmbeddingFunction } from "chromadb";
 import { Elysia, t } from "elysia";
 import slugify from "slugify";
 import { ragQueue } from "../..";
 import { authService, projectService } from "../../application/instances";
-import { chromaClient } from "../../infrastructure/utils/chroma";
+import { vectorStore } from "../../application/services/ocr";
 import { chatPrompt, llm } from "../../infrastructure/utils/openai";
 
 export const projectRouter = new Elysia()
@@ -76,23 +75,18 @@ export const projectRouter = new Elysia()
 			const projectId = params.id;
 			const { query } = body;
 
-			const collection = await chromaClient.getCollection({
-				name: projectId,
-				embeddingFunction: new OpenAIEmbeddingFunction({
-					openai_api_key: process.env.OPENAI_API_KEY as string,
-					openai_model: "text-embedding-3-large",
-				}),
-			});
+			const similaritySearchResults =
+				await vectorStore.similaritySearchWithScore(query, 5, {
+					source: projectId,
+				});
 
-			const data = await collection.query({
-				queryTexts: query,
-				nResults: 5,
+			const results = similaritySearchResults.map((result) => {
+				return {
+					id: result[0].id,
+					pageContent: result[0].pageContent,
+					score: result[1],
+				};
 			});
-
-			const results = data.documents.map((_, i) => ({
-				document: data.documents[i],
-				distance: data.distances?.[i],
-			}));
 
 			return { data: results };
 		},
@@ -108,20 +102,20 @@ export const projectRouter = new Elysia()
 			const projectId = params.id;
 			const { query } = body;
 
-			const collection = await chromaClient.getCollection({
-				name: projectId,
-				embeddingFunction: new OpenAIEmbeddingFunction({
-					openai_api_key: process.env.OPENAI_API_KEY as string,
-					openai_model: "text-embedding-3-large",
-				}),
+			const similaritySearchResults =
+				await vectorStore.similaritySearchWithScore(query, 5, {
+					source: projectId,
+				});
+
+			const results = similaritySearchResults.map((result) => {
+				return {
+					id: result[0].id,
+					pageContent: result[0].pageContent,
+					score: result[1],
+				};
 			});
 
-			const data = await collection.query({
-				queryTexts: query,
-				nResults: 10,
-			});
-
-			const content = data.documents.join("\n");
+			const content = results.map((result) => result.pageContent).join("\n");
 
 			const chain = chatPrompt.pipe(llm);
 			const text = await chain.invoke({ input: content, query });

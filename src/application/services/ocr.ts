@@ -12,7 +12,7 @@ const embeddings = new OpenAIEmbeddings({
 	model: "text-embedding-3-large",
 });
 
-const vectorStore = new Chroma(embeddings, {
+export const vectorStore = new Chroma(embeddings, {
 	collectionName: "ragscale",
 	url: "http://localhost:8010",
 });
