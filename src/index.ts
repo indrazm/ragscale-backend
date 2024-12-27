@@ -4,12 +4,8 @@ import { ElysiaAdapter } from "@bull-board/elysia";
 import cors from "@elysiajs/cors";
 import staticPlugin from "@elysiajs/static";
 import { Queue, Worker } from "bullmq";
-import { OpenAIEmbeddingFunction } from "chromadb";
 import { Elysia } from "elysia";
-import { ocrService, projectService } from "./application/instances";
 import { redisOptions } from "./infrastructure/config/redis";
-import { chromaClient } from "./infrastructure/utils/chroma";
-import { llm, summarizePrompt } from "./infrastructure/utils/openai";
 import { authRouter } from "./presentation/routes/auth";
 import { projectRouter } from "./presentation/routes/project";
 
@@ -24,61 +20,7 @@ new Worker(
 	async (job) => {
 		const { projectId } = job.data;
 
-		const project = await projectService.getProjectDetail(projectId);
-		await projectService.updateProject(projectId, {
-			status: "PROCESSING",
-		});
-
-		if (!project) {
-			return "Task failed!";
-		}
-
-		const filePath = `./public/${projectId}/${project.document}`;
-		const file = Bun.file(filePath);
-		const data = await file.arrayBuffer();
-		const buffer = Buffer.from(data);
-		const { pageCount } = await ocrService.getPageCount(data);
-		const { paths } = await ocrService.convertToImage({
-			projectId,
-			buffer,
-			fileName: project.document,
-			numberOfPages: pageCount,
-		});
-
-		const documentContent = [];
-		for (const path of paths) {
-			const { text } = await ocrService.extractText(path);
-			documentContent.push(text);
-		}
-
-		const chain = summarizePrompt.pipe(llm);
-		const text = await chain.invoke({ input: documentContent.join("\n") });
-
-		await chromaClient.deleteCollection({ name: projectId });
-
-		const collection = await chromaClient.createCollection({
-			name: projectId,
-			embeddingFunction: new OpenAIEmbeddingFunction({
-				openai_api_key: process.env.OPENAI_API_KEY as string,
-				openai_model: "text-embedding-3-large",
-			}),
-		});
-
-		const { text: textChunks } = await ocrService.splitText(
-			documentContent.join("\n"),
-		);
-
-		await collection.add({
-			documents: textChunks,
-			ids: textChunks.map((_, i) => `ids_${i}`),
-		});
-
-		await projectService.updateProject(projectId, {
-			summary: text.content.toString(),
-			status: "DONE",
-		});
-
-		return { message: "Task successfully processed", data: paths };
+		return { message: "Task successfully processed", data: projectId };
 	},
 	{ connection: redisOptions },
 );

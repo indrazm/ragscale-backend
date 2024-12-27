@@ -1,9 +1,9 @@
-import type { OpenAIEmbeddings } from "@langchain/openai";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { PDFDocument } from "pdf-lib";
 import { fromBuffer } from "pdf2pic";
 import slugify from "slugify";
 import { createWorker } from "tesseract.js";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import type { ProjectService } from "./project";
 
 interface ConvertToImage {
 	projectId: string;
@@ -13,13 +13,13 @@ interface ConvertToImage {
 }
 
 export class OCR {
-	private openAIEmbeddings: OpenAIEmbeddings;
+	private projectService: ProjectService;
 
-	constructor(embeddings: OpenAIEmbeddings) {
-		this.openAIEmbeddings = embeddings;
+	constructor(projectService: ProjectService) {
+		this.projectService = projectService;
 	}
 
-	public async convertToImage({
+	private async convertToImage({
 		projectId,
 		buffer,
 		fileName,
@@ -44,12 +44,7 @@ export class OCR {
 		return { paths };
 	}
 
-	public async convertToEmbeddings(textChunks: string[]) {
-		const embeddings = await this.openAIEmbeddings.embedDocuments(textChunks);
-		return { embeddings };
-	}
-
-	public async extractText(documentPath: string) {
+	private async extractText(documentPath: string) {
 		const file = Bun.file(documentPath);
 		const data = await file.arrayBuffer();
 		const buffer = Buffer.from(data);
@@ -60,12 +55,12 @@ export class OCR {
 		return { text: res.data.text };
 	}
 
-	public async getPageCount(pdfBuffer: ArrayBuffer) {
+	private async getPageCount(pdfBuffer: ArrayBuffer) {
 		const pdfDoc = await PDFDocument.load(pdfBuffer);
 		return { pageCount: pdfDoc.getPageCount() };
 	}
 
-	public async splitText(text: string) {
+	private async splitText(text: string) {
 		const splitter = new RecursiveCharacterTextSplitter({
 			chunkSize: 1000,
 			chunkOverlap: 0,
@@ -73,5 +68,46 @@ export class OCR {
 
 		const textChunk = await splitter.splitText(text);
 		return { text: textChunk };
+	}
+
+	private async extractImagePaths(
+		filePath: string,
+		fileName: string,
+		projectId: string,
+	) {
+		const file = Bun.file(filePath);
+		const data = await file.arrayBuffer();
+		const buffer = Buffer.from(data);
+		const { pageCount } = await this.getPageCount(data);
+		const { paths } = await this.convertToImage({
+			projectId,
+			buffer,
+			fileName,
+			numberOfPages: pageCount,
+		});
+
+		return { paths };
+	}
+
+	public async processRAG(projectId: string) {
+		const project = await this.projectService.getProjectDetail(projectId);
+		await this.projectService.updateProject(projectId, {
+			status: "PROCESSING",
+		});
+
+		if (!project) {
+			return "Task failed!";
+		}
+
+		const filePath = `./public/${projectId}/${project.document}`;
+		const { paths } = await this.extractImagePaths(
+			filePath,
+			project.document,
+			projectId,
+		);
+
+		console.log("Extracted image paths: ", paths);
+
+		return { paths };
 	}
 }
