@@ -16,7 +16,7 @@ const embeddings = new OpenAIEmbeddings({
 
 export const vectorStore = new Chroma(embeddings, {
 	collectionName: "ragscale",
-	url: "http://localhost:8090",
+	url: `http://localhost:${process.env.CHROMADB_PORT}`,
 });
 
 interface ConvertToImage {
